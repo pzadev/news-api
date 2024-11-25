@@ -1,29 +1,24 @@
 const express = require("express");
 const app = express();
-const { getEndPoints, getTopics } = require("./controllers");
+const {
+  notFound,
+  customError,
+  serverError,
+  wrongRoute,
+} = require("./error-handling");
+const { getEndPoints, getTopics, getArticle } = require("./controllers");
 
 app.get("/api", getEndPoints);
 
 app.get("/api/topics", getTopics);
 
+app.get("/api/articles/:article_id", getArticle);
+
 // Error Handling
 
-app.use((err, req, res, next) => {
-  if (err.status === 400) {
-    return res.status(400).send({
-      error: "Bad Request",
-    });
-  }
-  next(err);
-});
-
-app.use((err, req, res, next) => {
-  if (err.status === 404) {
-    return res.status(404).send({
-      error: "Not Found",
-    });
-  }
-  next(err);
-});
+app.use(notFound);
+app.use(customError);
+app.use(wrongRoute);
+// app.use(serverError);
 
 module.exports = app;
