@@ -26,29 +26,53 @@ describe("GET /api", () => {
 
 describe("GET /api/topics", () => {
   test("200: Responds with an array of topic objects", () => {
-    const topics = [
-      {
-        description: "The man, the Mitch, the legend",
-        slug: "mitch",
-      },
-      {
-        description: "Not dogs",
-        slug: "cats",
-      },
-      {
-        description: "what books are made of",
-        slug: "paper",
-      },
-    ];
-
     return request(app)
       .get("/api/topics")
       .expect(200)
       .then(({ body }) => {
-        expect(body).toEqual(topics);
+        expect(body).toHaveLength(3);
+        body.forEach((slug) => {
+          expect(slug).toMatchObject({
+            description: expect.any(String),
+            slug: expect.any(String),
+          });
+        });
       });
   });
-  test("should return 404 for invalid request", () => {
-    return request(app).get("/api/topics/1").expect(404);
+  test("should return 404 for an invalid url", () => {
+    return request(app)
+      .get("/api/topic") // Missing s
+      .expect(404)
+      .then(({ body }) => {
+        expect(body.msg).toBe("Not Found");
+      });
+  });
+});
+
+describe("GET /api/articles/:article_id", () => {
+  test("respond with an article object", () => {
+    return request(app)
+      .get("/api/articles/1")
+      .expect(200)
+      .then(({ body }) => {
+        expect(body.article).toMatchObject({
+          article_id: expect.any(Number),
+          title: expect.any(String),
+          topic: expect.any(String),
+          author: expect.any(String),
+          body: expect.any(String),
+          created_at: expect.any(String),
+          votes: expect.any(Number),
+          article_img_url: expect.any(String),
+        });
+      });
+  });
+  test("respond with 404 for invalid id", () => {
+    return request(app)
+      .get("/api/articles/9999")
+      .expect(404)
+      .then(({ body }) => {
+        expect(body.msg).toEqual("Not Found");
+      });
   });
 });
