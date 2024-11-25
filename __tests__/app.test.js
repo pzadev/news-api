@@ -41,7 +41,7 @@ describe("GET /api/topics", () => {
   });
   test("should return 404 for an invalid url", () => {
     return request(app)
-      .get("/api/topic") // Missing s
+      .get("/api/notaroute")
       .expect(404)
       .then(({ body }) => {
         expect(body.msg).toBe("Not Found");
@@ -73,6 +73,33 @@ describe("GET /api/articles/:article_id", () => {
       .expect(404)
       .then(({ body }) => {
         expect(body.msg).toEqual("Not Found");
+      });
+  });
+});
+
+describe("GET /api/articles", () => {
+  test("should respond with an articles array of article objects", () => {
+    return request(app)
+      .get("/api/articles")
+      .expect(200)
+      .then(({ body }) => {
+        const { articles } = body;
+        expect(articles).toHaveLength(13);
+        articles.forEach((articles) => {
+          expect(articles).toMatchObject({
+            article_id: expect.any(Number),
+            title: expect.any(String),
+            topic: expect.any(String),
+            author: expect.any(String),
+            created_at: expect.any(String),
+            votes: expect.any(Number),
+            article_img_url: expect.any(String),
+            comment_count: expect.any(Number),
+          });
+          // expect(articles).toBeSortedBy("created_at", {
+          //   descending: true,
+          // }); fix - check package json for correct installation
+        });
       });
   });
 });
