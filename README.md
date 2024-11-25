@@ -1,8 +1,6 @@
-# Northcoders News API
+# READ ME
 
-For instructions, please head over to [L2C NC News](https://l2c.northcoders.com/courses/be/nc-news).
-
-
+To run this repo locally you'll need to create two enviroment variables to connect to the two databases locally.
 
 --- 
 
