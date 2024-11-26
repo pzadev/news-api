@@ -227,7 +227,7 @@ describe("POST /api/articles/:article_id/comments", () => {
 });
 
 describe("PATCH /api/articles/:article_id", () => {
-  test.only("responds with updated article", () => {
+  test("responds with updated article", () => {
     const updatedVote = { inc_votes: 19 };
 
     return request(app)
