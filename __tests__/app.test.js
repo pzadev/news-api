@@ -163,15 +163,65 @@ describe("GET /api/articles/:article_id/comments", () => {
       });
   });
   test("should return error 400 for an invalid entry ", () => {
-    return (
-      request(app)
-        .get("/api/articles/invalidRoute/comments")
-        // Expected integer, not invalidrRoute
-        .expect(400)
-        .then(({ body }) => {
-          const { msg } = body;
-          expect(msg).toBe("Bad Request");
-        })
-    );
+    return request(app)
+      .get("/api/articles/invalidRoute/comments")
+      .expect(400)
+      .then(({ body }) => {
+        const { msg } = body;
+        expect(msg).toBe("Bad Request");
+      });
+  });
+});
+
+describe("POST /api/articles/:article_id/comments", () => {
+  test("should post a comment to an article", () => {
+    const comment = {
+      body: "Run away, then when you've run far enough, run further",
+      username: "butter_bridge",
+    };
+    return request(app)
+      .post("/api/articles/2/comments")
+      .send(comment)
+      .expect(201)
+      .then((response) => {
+        const { body } = response;
+        const { comment } = body;
+        expect(comment).toMatchObject({
+          comment_id: expect.any(Number),
+          body: "Run away, then when you've run far enough, run further",
+          votes: expect.any(Number),
+          author: "butter_bridge",
+          article_id: 2,
+          created_at: expect.any(String),
+        });
+      });
+  });
+  test("return status 404 for non existing article_id", () => {
+    const comment = {
+      body: "Run away, then when you've run far enough, run further",
+      username: "butter_bridge",
+    };
+    return request(app)
+      .post("/api/articles/99/comments")
+      .send(comment)
+      .expect(404)
+      .then(({ body }) => {
+        const { msg } = body;
+        expect(msg).toBe("Not Found");
+      });
+  });
+  test("return status 404 for non existing username", () => {
+    const comment = {
+      body: "Run away, then when you've run far enough, run further",
+      username: "margarine_bridge",
+    };
+    return request(app)
+      .post("/api/articles/2/comments")
+      .send(comment)
+      .expect(404)
+      .then(({ body }) => {
+        const { msg } = body;
+        expect(msg).toBe("Not Found");
+      });
   });
 });
