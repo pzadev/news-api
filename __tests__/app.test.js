@@ -2,11 +2,11 @@ const endpointsJson = require("../endpoints.json");
 const request = require("supertest");
 const app = require("../app");
 const db = require("../db/connection");
-/* Set up your test imports here */
+// Test imports
+const sorted = require("jest-sorted");
 const seed = require("../db/seeds/seed");
 const data = require("../db/data/test-data");
 
-/* Set up your beforeEach & afterAll functions here */
 beforeAll(() => {
   return seed(data);
 });
@@ -84,9 +84,8 @@ describe("GET /api/articles", () => {
       .expect(200)
       .then(({ body }) => {
         const { articles } = body;
-        expect(articles).toHaveLength(13);
-        articles.forEach((articles) => {
-          expect(articles).toMatchObject({
+        articles.forEach((article) => {
+          expect(article).toMatchObject({
             article_id: expect.any(Number),
             title: expect.any(String),
             topic: expect.any(String),
@@ -96,9 +95,18 @@ describe("GET /api/articles", () => {
             article_img_url: expect.any(String),
             comment_count: expect.any(Number),
           });
-          // expect(articles).toBeSortedBy("created_at", {
-          //   descending: true,
-          // }); fix - check package json for correct installation
+        });
+      });
+  });
+  test("Should be full list of articles and descending by date", () => {
+    return request(app)
+      .get("/api/articles")
+      .expect(200)
+      .then(({ body }) => {
+        const { articles } = body;
+        expect(articles).toHaveLength(13);
+        expect(articles).toBeSortedBy("created_at", {
+          descending: true,
         });
       });
   });
