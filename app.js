@@ -6,13 +6,16 @@ const {
   serverError,
   wrongRoute,
 } = require("./error-handling");
-const { getEndPoints, getTopics, getArticle } = require("./controllers");
+const { getEndPoints, getTopics, getArticle, getArticles } = require("./controllers");
 
 app.get("/api", getEndPoints);
 
 app.get("/api/topics", getTopics);
 
+app.get("/api/articles", getArticles)
+
 app.get("/api/articles/:article_id", getArticle);
+
 
 // Error Handling
 
