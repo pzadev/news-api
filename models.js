@@ -17,10 +17,10 @@ exports.fetchArticles = () => {
 
   return db.query(queryText).then(({ rows }) => {
     rows.map((article) => {
-        article.comment_count = Number(article.comment_count)
-        return article
-    })
-    return rows
+      article.comment_count = Number(article.comment_count);
+      return article;
+    });
+    return rows;
   });
 };
 
@@ -34,3 +34,29 @@ exports.fetchArticle = (article_id) => {
     return rows[0];
   });
 };
+
+exports.fetchComments = (article_id) => {
+  const text =
+    "SELECT * FROM comments WHERE article_id = $1 ORDER BY created_at DESC";
+  const values = [article_id];
+  return db.query(text, values).then(({ rows }) => {
+    if (rows.length === 0) {
+      return []
+    }
+    return rows;
+  })
+};
+
+exports.checkArticleExists = (article_id) => {
+  const text = "SELECT * FROM articles WHERE article_id = $1";
+  const values = [article_id];
+
+  return db.query(text, values).then(({ rows }) => {
+    if (rows.length === 0) {
+      return Promise.reject({ status: 404, msg: "Id not found" });
+    }
+    return true
+  })
+};
+
+

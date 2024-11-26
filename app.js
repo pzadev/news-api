@@ -6,7 +6,7 @@ const {
   serverError,
   wrongRoute,
 } = require("./error-handling");
-const { getEndPoints, getTopics, getArticle, getArticles } = require("./controllers");
+const { getEndPoints, getTopics, getArticle, getArticles, getAllComments } = require("./controllers");
 
 app.get("/api", getEndPoints);
 
@@ -16,12 +16,13 @@ app.get("/api/articles", getArticles)
 
 app.get("/api/articles/:article_id", getArticle);
 
+app.get("/api/articles/:article_id/comments", getAllComments)
 
 // Error Handling
 
 app.use(notFound);
 app.use(customError);
 app.use(wrongRoute);
-// app.use(serverError);
+app.use(serverError);
 
 module.exports = app;
