@@ -41,10 +41,10 @@ exports.fetchComments = (article_id) => {
   const values = [article_id];
   return db.query(text, values).then(({ rows }) => {
     if (rows.length === 0) {
-      return []
+      return [];
     }
     return rows;
-  })
+  });
 };
 
 exports.checkArticleExists = (article_id) => {
@@ -55,8 +55,26 @@ exports.checkArticleExists = (article_id) => {
     if (rows.length === 0) {
       return Promise.reject({ status: 404, msg: "Id not found" });
     }
-    return true
-  })
+    return true;
+  });
 };
 
+exports.pushComments = (article_id, username, body) => {
+  return db
+    .query(
+      `INSERT INTO comments(article_id, author, body
+    ) VALUES ($1, $2, $3) RETURNING *`,
+      [article_id, username, body]
+    )
+    .then(({ rows }) => {
+      return rows[0];
+    });
+};
 
+exports.checkUsers = (username) => {
+  return db
+    .query(`SELECT * FROM users WHERE username = $1`, [username])
+    .then(({ rows }) => {
+      return rows.length > 0;
+    });
+};

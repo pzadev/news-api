@@ -5,6 +5,8 @@ const {
   fetchArticles,
   fetchComments,
   checkArticleExists,
+  pushComments,
+  checkUsers,
 } = require("./models");
 
 exports.getEndPoints = (req, res) => {
@@ -49,6 +51,31 @@ exports.getAllComments = (req, res, next) => {
     })
     .then((comments) => {
       res.status(200).send({ comments });
+    })
+    .catch((err) => {
+      next(err);
+    });
+};
+
+exports.postComments = (req, res, next) => {
+  const { article_id } = req.params;
+  const { username, body } = req.body;
+
+  if (!username || !body) {
+    return res.status(400).send({ msg: "Bad Request" });
+  }
+
+  checkArticleExists(article_id)
+    .then(() => {
+      return checkUsers(username).then((usernamePass) => {
+        if (!usernamePass) {
+          return res.status(404).send({ msg: "Not Found" });
+        }
+
+        return pushComments(article_id, username, body).then((comment) => {
+          return res.status(201).send({ comment });
+        });
+      });
     })
     .catch((err) => {
       console.log(err);
