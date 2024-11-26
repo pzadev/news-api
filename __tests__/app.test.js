@@ -6,6 +6,7 @@ const db = require("../db/connection");
 const sorted = require("jest-sorted");
 const seed = require("../db/seeds/seed");
 const data = require("../db/data/test-data");
+const { expect } = require("@jest/globals");
 
 beforeAll(() => {
   return seed(data);
@@ -56,7 +57,7 @@ describe("GET /api/articles/:article_id", () => {
       .expect(200)
       .then(({ body }) => {
         expect(body.article).toMatchObject({
-          article_id: expect.any(Number),
+          article_id: 1,
           title: expect.any(String),
           topic: expect.any(String),
           author: expect.any(String),
@@ -109,5 +110,68 @@ describe("GET /api/articles", () => {
           descending: true,
         });
       });
+  });
+});
+
+describe("GET /api/articles/:article_id/comments", () => {
+  test("should respond with array of comments for given article_id ", () => {
+    return request(app)
+      .get("/api/articles/9/comments")
+      .expect(200)
+      .then(({ body }) => {
+        const { comments } = body;
+        expect(comments).toHaveLength(2);
+        comments.forEach((comment) => {
+          expect(comment).toMatchObject({
+            comment_id: expect.any(Number),
+            body: expect.any(String),
+            votes: expect.any(Number),
+            author: expect.any(String),
+            article_id: 9,
+            created_at: expect.any(String),
+          });
+        });
+      });
+  });
+  test("should be sorted by most recent comment first", () => {
+    return request(app)
+      .get("/api/articles/9/comments")
+      .expect(200)
+      .then(({ body }) => {
+        const { comments } = body;
+        expect(comments).toBeSortedBy("created_at", {
+          descending: true,
+        });
+      });
+  });
+  test("should return 404 for valid but non existing article_id ", () => {
+    return request(app)
+      .get("/api/articles/999/comments")
+      .expect(404)
+      .then(({ body }) => {
+        const { msg } = body;
+        expect(msg).toBe("Not Found");
+      });
+  });
+  test("should return empty array for valid article_id which has no comments", () => {
+    return request(app)
+      .get("/api/articles/2/comments")
+      .expect(200)
+      .then(({ body }) => {
+        const { comments } = body;
+        expect(comments).toEqual([]);
+      });
+  });
+  test("should return error 400 for an invalid entry ", () => {
+    return (
+      request(app)
+        .get("/api/articles/invalidRoute/comments")
+        // Expected integer, not invalidrRoute
+        .expect(400)
+        .then(({ body }) => {
+          const { msg } = body;
+          expect(msg).toBe("Bad Request");
+        })
+    );
   });
 });
