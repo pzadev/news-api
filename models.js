@@ -80,8 +80,7 @@ exports.checkUsers = (username) => {
 };
 
 exports.updateVotes = (article_id, votes) => {
-  const plusOrMinus = votes >= 0 ? "+" : "-";
-  let text = `UPDATE articles SET votes = votes ${plusOrMinus} $1 WHERE article_id = $2 RETURNING *`;
+  let text = `UPDATE articles SET votes = votes + $1 WHERE article_id = $2 RETURNING *`;
   const values = [votes, article_id];
 
   return db.query(text, values).then(({rows}) => {
