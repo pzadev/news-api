@@ -1,27 +1,49 @@
 const db = require("./db/connection");
+const { sort } = require("./db/data/test-data/articles");
 
 exports.fetchTopics = () => {
   const queryText = `SELECT * FROM topics`;
   return db.query(queryText).then(({ rows }) => rows);
 };
 
-exports.fetchArticles = () => {
-  const queryText = `
+exports.fetchArticles = (sort_by = "created_at", order = "DESC") => {
+  const validQueries = [
+    "created_at",
+    "title",
+    "author",
+    "votes",
+    "author_id",
+    "topic",
+    "article_id",
+  ];
+  const validOrders = ["ASC", "DESC", "asc", "desc"];
+
+  if (!validQueries.includes(sort_by)) {
+    return Promise.reject({ status: 400, msg: "Invalid sort_by query" });
+  }
+
+  if (!validOrders.includes(order)) {
+    return Promise.reject({ status: 400, msg: "Invalid order query" });
+  }
+
+  let queryText = `
     SELECT articles.article_id, articles.author, articles.topic, articles.title, articles.created_at, articles.votes, articles.article_img_url, 
     COUNT(comments.comment_id) AS comment_count
     FROM articles 
     LEFT JOIN comments ON articles.article_id = comments.article_id
-    GROUP BY articles.article_id
-    ORDER BY articles.created_at DESC;
-  `;
+    GROUP BY articles.article_id `;
 
-  return db.query(queryText).then(({ rows }) => {
-    rows.map((article) => {
-      article.comment_count = Number(article.comment_count);
-      return article;
+  if (validQueries.includes(sort_by) && validOrders.includes(order)) {
+    queryText += `ORDER BY ${sort_by} ${order} `;
+
+    return db.query(queryText).then(({ rows }) => {
+      rows.map((article) => {
+        article.comment_count = Number(article.comment_count);
+        return article;
+      });
+      return rows;
     });
-    return rows;
-  });
+  }
 };
 
 exports.fetchArticle = (article_id) => {
@@ -107,10 +129,8 @@ exports.removeComment = (comment_id) => {
   return db.query(text, values);
 };
 
-
 exports.fetchUsers = () => {
   return db.query(`SELECT * FROM users`).then(({ rows }) => {
     return rows;
   });
 };
-

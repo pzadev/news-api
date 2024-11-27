@@ -328,7 +328,6 @@ describe("DELETE /api/comments/:comment_id", () => {
   });
 });
 
-
 describe("GET /api/users", () => {
   test("should return all users", () => {
     return request(app)
@@ -357,3 +356,43 @@ describe("GET /api/users", () => {
   });
 });
 
+describe("GET /api/articles (sorting queries)", () => {
+  test("should default sort by created_at and default order by desc", () => {
+    return request(app)
+      .get("/api/articles")
+      .expect(200)
+      .then(({ body }) => {
+        const { articles } = body;
+        expect(articles).toHaveLength(13);
+        expect(articles).toBeSortedBy("created_at", { descending: true });
+      });
+  });
+  test("test non default sort_by and non default order", () => {
+    return request(app)
+      .get("/api/articles?sort_by=author&order=ASC")
+      .expect(200)
+      .then(({ body }) => {
+        const { articles } = body;
+        expect(articles).toHaveLength(13);
+        expect(articles).toBeSortedBy("author", { descending: false });
+      });
+  });
+  test("should return error for non existing sort_by query ", () => {
+    return request(app)
+      .get("/api/articles?sort_by=dogs")
+      .expect(400)
+      .then(({ body }) => {
+        const { msg } = body;
+        expect(msg).toEqual("Invalid sort_by query");
+      });
+  });
+  test("should return error for non existing order query ", () => {
+    return request(app)
+      .get("/api/articles?sort_by=author&order=dogs")
+      .expect(400)
+      .then(({ body }) => {
+        const { msg } = body;
+        expect(msg).toEqual("Invalid order query");
+      });
+  });
+});
