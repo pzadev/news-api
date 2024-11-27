@@ -1,5 +1,6 @@
 const express = require("express");
 const app = express();
+
 const {
   notFound,
   customError,
@@ -17,6 +18,7 @@ const {
   deleteComment,
   getUsers,
 } = require("./controllers");
+
 
 app.use(express.json());
 
@@ -37,6 +39,8 @@ app.post("/api/articles/:article_id/comments", postComments);
 app.delete("/api/comments/:comment_id", deleteComment);
 
 app.patch("/api/articles/:article_id", patchVotes);
+
+app.delete("/api/comments/:comment_id", deleteComment)
 
 // Error Handling
 

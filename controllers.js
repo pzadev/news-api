@@ -8,9 +8,11 @@ const {
   pushComments,
   checkUsers,
   updateVotes,
+
   fetchUsers,
   removeComment,
   checkCommentExists,
+
 } = require("./models");
 
 exports.getEndPoints = (_, res) => {
@@ -112,6 +114,7 @@ exports.deleteComment = (req, res, next) => {
     .catch(next);
 };
 
+
 exports.getUsers = (_, res, next) => {
   fetchUsers()
     .then((users) => {
@@ -119,3 +122,4 @@ exports.getUsers = (_, res, next) => {
     })
     .catch(next);
 };
+
