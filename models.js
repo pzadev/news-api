@@ -6,7 +6,7 @@ exports.fetchTopics = () => {
   return db.query(queryText).then(({ rows }) => rows);
 };
 
-exports.fetchArticles = (sort_by = "created_at", order = "DESC") => {
+exports.fetchArticles = (sort_by = "created_at", order = "DESC", topic) => {
   const validQueries = [
     "created_at",
     "title",
@@ -27,23 +27,28 @@ exports.fetchArticles = (sort_by = "created_at", order = "DESC") => {
   }
 
   let queryText = `
-    SELECT articles.article_id, articles.author, articles.topic, articles.title, articles.created_at, articles.votes, articles.article_img_url, 
-    COUNT(comments.comment_id) AS comment_count
-    FROM articles 
+    SELECT articles.article_id, articles.author, articles.topic, articles.title, articles.created_at, articles.votes, articles.article_img_url, COUNT(comments.comment_id) AS comment_count
+    FROM articles
     LEFT JOIN comments ON articles.article_id = comments.article_id
-    GROUP BY articles.article_id `;
+  `;
+
+  if (topic) {
+    queryText += ` WHERE articles.topic = $1 `;
+  }
+
+  queryText += `GROUP BY articles.article_id`;
 
   if (validQueries.includes(sort_by) && validOrders.includes(order)) {
-    queryText += `ORDER BY ${sort_by} ${order} `;
-
-    return db.query(queryText).then(({ rows }) => {
-      rows.map((article) => {
-        article.comment_count = Number(article.comment_count);
-        return article;
-      });
-      return rows;
-    });
+    queryText += ` ORDER BY ${sort_by} ${order}`;
   }
+
+  return db.query(queryText, topic ? [topic] : []).then(({ rows }) => {
+    rows.map((article) => {
+      article.comment_count = Number(article.comment_count);
+      return article;
+    });
+    return rows;
+  });
 };
 
 exports.fetchArticle = (article_id) => {

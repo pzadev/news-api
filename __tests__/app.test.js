@@ -396,3 +396,45 @@ describe("GET /api/articles (sorting queries)", () => {
       });
   });
 });
+describe("GET /api/articles (topic query)", () => {
+  test("should accept topic query and filter by matching topic", () => {
+    return request(app)
+      .get("/api/articles?topic=cats")
+      .expect(200)
+      .then(({ body }) => {
+        const { articles } = body;
+        expect(articles).toHaveLength(1);
+        expect(articles).toBeSortedBy("created_at", { descending: true });
+      });
+  });
+  test("if the query is omitted, the endpoint should respond with all articles. ", () => {
+    return request(app)
+      .get("/api/articles?topic")
+      .expect(200)
+      .then(({ body }) => {
+        const { articles } = body;
+        expect(articles).toHaveLength(13);
+        expect(articles).toBeSortedBy("created_at", { descending: true });
+      });
+  });
+  test("should return empty array where topic matches no articles", () => {
+    return request(app)
+      .get("/api/articles?topic=dogs")
+      .expect(200)
+      .then(({ body }) => {
+        const { articles } = body;
+        expect(articles).toHaveLength(0);
+        expect(articles).toEqual([]);
+      });
+  });
+  test("should return matching topic sorted by title desc ", () => {
+    return request(app)
+      .get("/api/articles?topic=cats&sort_by=title")
+      .expect(200)
+      .then(({ body }) => {
+        const { articles } = body;
+        expect(articles).toHaveLength(1);
+        expect(articles).toBeSortedBy("created_at", { descending: true });
+      });
+  });
+});
