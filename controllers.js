@@ -7,6 +7,7 @@ const {
   checkArticleExists,
   pushComments,
   checkUsers,
+  updateVotes,
 } = require("./models");
 
 exports.getEndPoints = (req, res) => {
@@ -78,7 +79,21 @@ exports.postComments = (req, res, next) => {
       });
     })
     .catch((err) => {
-      console.log(err);
+      next(err);
+    });
+};
+
+exports.patchVotes = (req, res, next) => {
+  const { article_id } = req.params;
+  const { inc_votes } = req.body;
+
+  checkArticleExists(article_id)
+    .then(() => {
+      return updateVotes(article_id, inc_votes).then((update) => {
+        return res.status(201).send({ update });
+      });
+    })
+    .catch((err) => {
       next(err);
     });
 };

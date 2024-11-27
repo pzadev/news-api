@@ -78,3 +78,12 @@ exports.checkUsers = (username) => {
       return rows.length > 0;
     });
 };
+
+exports.updateVotes = (article_id, votes) => {
+  let text = `UPDATE articles SET votes = votes + $1 WHERE article_id = $2 RETURNING *`;
+  const values = [votes, article_id];
+
+  return db.query(text, values).then(({rows}) => {
+    return rows[0];
+  });
+};

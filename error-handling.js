@@ -13,7 +13,7 @@ exports.customError = (err, req, res, next) => {
 };
 
 exports.wrongRoute = (req, res, next) => {
-  res.status(404).send({ msg: "Not Found" });
+  res.status(400).send({ msg: "Bad Request" });
 };
 
 exports.serverError = (err, req, res, next) => {
