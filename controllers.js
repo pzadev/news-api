@@ -8,6 +8,8 @@ const {
   pushComments,
   checkUsers,
   updateVotes,
+  checkCommentExists,
+  removeComment,
 } = require("./models");
 
 exports.getEndPoints = (req, res) => {
@@ -96,4 +98,15 @@ exports.patchVotes = (req, res, next) => {
     .catch((err) => {
       next(err);
     });
+};
+
+exports.deleteComment = (req, res, next) => {
+  const { comment_id } = req.params;
+  checkCommentExists(comment_id)
+    .then(() => {
+      return removeComment(comment_id).then((body) => {
+        return res.status(204).send({ body });
+      });
+    })
+    .catch(next);
 };
