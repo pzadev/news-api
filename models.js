@@ -106,3 +106,11 @@ exports.removeComment = (comment_id) => {
 
   return db.query(text, values);
 };
+
+
+exports.fetchUsers = () => {
+  return db.query(`SELECT * FROM users`).then(({ rows }) => {
+    return rows;
+  });
+};
+

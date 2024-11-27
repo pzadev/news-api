@@ -1,7 +1,24 @@
 const express = require("express");
 const app = express();
-const { notFound, customError, serverError, wrongRoute } = require("./error-handling");
-const { getEndPoints, getTopics, getArticle, getArticles, getAllComments, postComments, patchVotes, deleteComment } = require("./controllers");
+
+const {
+  notFound,
+  customError,
+  serverError,
+  wrongRoute,
+} = require("./error-handling");
+const {
+  getEndPoints,
+  getTopics,
+  getArticle,
+  getArticles,
+  getAllComments,
+  postComments,
+  patchVotes,
+  deleteComment,
+  getUsers,
+} = require("./controllers");
+
 
 app.use(express.json());
 
@@ -9,15 +26,19 @@ app.get("/api", getEndPoints);
 
 app.get("/api/topics", getTopics);
 
-app.get("/api/articles", getArticles)
+app.get("/api/articles", getArticles);
 
 app.get("/api/articles/:article_id", getArticle);
 
-app.get("/api/articles/:article_id/comments", getAllComments)
+app.get("/api/articles/:article_id/comments", getAllComments);
 
-app.post("/api/articles/:article_id/comments", postComments)
+app.get("/api/users", getUsers);
 
-app.patch("/api/articles/:article_id", patchVotes)
+app.post("/api/articles/:article_id/comments", postComments);
+
+app.delete("/api/comments/:comment_id", deleteComment);
+
+app.patch("/api/articles/:article_id", patchVotes);
 
 app.delete("/api/comments/:comment_id", deleteComment)
 
