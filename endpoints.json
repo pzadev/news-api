@@ -12,7 +12,7 @@
   
   "GET /api/articles": {
     "description": "serves an array of all articles",
-    "queries": ["author", "topic", "sort_by", "order"],
+    "queries": ["author", "topic", "sort_by", "order", "article_id", "votes"],
     "exampleResponse": {
       "articles": [
         {
@@ -125,10 +125,4 @@
 }
 }
 
-  "DELETE /api/comments/:comment_id": {
-    "description": "deletes a comment from a given input comment_id and responds with empty object",
-    "queries": [],  
-    "exampleResponse": {}
-    }
-  }
 

@@ -40,7 +40,6 @@ app.delete("/api/comments/:comment_id", deleteComment);
 
 app.patch("/api/articles/:article_id", patchVotes);
 
-app.delete("/api/comments/:comment_id", deleteComment)
 
 // Error Handling
 

@@ -1,3 +1,4 @@
+const { sort } = require("./db/data/test-data/articles");
 const endpointsJson = require("./endpoints.json");
 const {
   fetchTopics,
@@ -27,8 +28,9 @@ exports.getTopics = (_, res, next) => {
     .catch(next);
 };
 
-exports.getArticles = (_, res, next) => {
-  fetchArticles()
+exports.getArticles = (req, res, next) => {
+  const { sort_by, order} = req.query;
+  fetchArticles(sort_by, order)
     .then((articles) => {
       res.status(200).send({ articles });
     })
