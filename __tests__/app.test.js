@@ -299,6 +299,35 @@ describe("PATCH /api/articles/:article_id", () => {
   });
 });
 
+describe("DELETE /api/comments/:comment_id", () => {
+  test("should delete a comment from a given comment_id ", () => {
+    return request(app)
+      .delete("/api/comments/1")
+      .expect(204)
+      .then(({ body }) => {
+        expect(body).toEqual({});
+      });
+  });
+  test("should respond with error for valid but non existing comment_id", () => {
+    return request(app)
+      .delete("/api/comments/999")
+      .expect(404)
+      .then(({ body }) => {
+        const { msg } = body;
+        expect(msg).toEqual("Not Found");
+      });
+  });
+  test("respond with error 404 when trying to delete a comment already deleted", () => {
+    return request(app)
+      .delete("/api/comments/1")
+      .expect(404)
+      .then(({ body }) => {
+        const { msg } = body;
+        expect(msg).toEqual("Not Found");
+      });
+  });
+});
+
 describe("GET /api/users", () => {
   test("should return all users", () => {
     return request(app)
