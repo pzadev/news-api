@@ -52,7 +52,17 @@ exports.fetchArticles = (sort_by = "created_at", order = "DESC", topic) => {
 };
 
 exports.fetchArticle = (article_id) => {
-  const text = "SELECT * FROM articles WHERE article_id = $1";
+
+  const text = `
+  SELECT articles.article_id, articles.topic, articles.author, articles.title, articles.body, 
+  articles.created_at, articles.votes, articles.article_img_url,
+  COUNT(comments.comment_id) AS comment_count
+  FROM articles
+  JOIN comments ON articles.article_id = comments.article_id
+  WHERE articles.article_id = $1
+  GROUP BY articles.article_id
+`;
+
   const values = [article_id];
   return db.query(text, values).then(({ rows }) => {
     if (rows.length === 0) {
