@@ -8,13 +8,14 @@ const {
   pushComments,
   checkUsers,
   updateVotes,
+  fetchUsers,
 } = require("./models");
 
-exports.getEndPoints = (req, res) => {
+exports.getEndPoints = (_, res) => {
   res.status(200).send({ endpoints: endpointsJson });
 };
 
-exports.getTopics = (req, res, next) => {
+exports.getTopics = (_, res, next) => {
   fetchTopics()
     .then((topics) => {
       res.status(200).send(topics);
@@ -22,7 +23,7 @@ exports.getTopics = (req, res, next) => {
     .catch(next);
 };
 
-exports.getArticles = (req, res, next) => {
+exports.getArticles = (_, res, next) => {
   fetchArticles()
     .then((articles) => {
       res.status(200).send({ articles });
@@ -96,4 +97,12 @@ exports.patchVotes = (req, res, next) => {
     .catch((err) => {
       next(err);
     });
+};
+
+exports.getUsers = (_, res, next) => {
+  fetchUsers()
+    .then((users) => {
+      return res.status(200).send({ users });
+    })
+    .catch(next);
 };

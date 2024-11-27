@@ -1,7 +1,7 @@
 const express = require("express");
 const app = express();
 const { notFound, customError, serverError, wrongRoute } = require("./error-handling");
-const { getEndPoints, getTopics, getArticle, getArticles, getAllComments, postComments, patchVotes } = require("./controllers");
+const { getEndPoints, getTopics, getArticle, getArticles, getAllComments, postComments, patchVotes, getUsers } = require("./controllers");
 
 app.use(express.json());
 
@@ -14,6 +14,8 @@ app.get("/api/articles", getArticles)
 app.get("/api/articles/:article_id", getArticle);
 
 app.get("/api/articles/:article_id/comments", getAllComments)
+
+app.get("/api/users", getUsers)
 
 app.post("/api/articles/:article_id/comments", postComments)
 

@@ -45,7 +45,7 @@ describe("GET /api/topics", () => {
       .get("/api/notaroute")
       .expect(400)
       .then(({ body }) => {
-        const {msg} = body
+        const { msg } = body;
         expect(msg).toBe("Bad Request");
       });
   });
@@ -291,6 +291,34 @@ describe("PATCH /api/articles/:article_id", () => {
     return request(app)
       .patch("/api/not-a-url/1")
       .send(updatedVote)
+      .expect(400)
+      .then(({ body }) => {
+        const { msg } = body;
+        expect(msg).toEqual("Bad Request");
+      });
+  });
+});
+
+describe("GET /api/users", () => {
+  test("should return all users", () => {
+    return request(app)
+      .get("/api/users")
+      .expect(200)
+      .then(({ body }) => {
+        const { users } = body;
+        expect(users).toHaveLength(4);
+        users.forEach((user) => {
+          expect(user).toMatchObject({
+            username: expect.any(String),
+            name: expect.any(String),
+            avatar_url: expect.any(String),
+          });
+        });
+      });
+  });
+  test("should return error 400 for an invalid route ", () => {
+    return request(app)
+      .get("/api/usernames")
       .expect(400)
       .then(({ body }) => {
         const { msg } = body;
