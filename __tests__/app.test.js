@@ -438,3 +438,26 @@ describe("GET /api/articles (topic query)", () => {
       });
   });
 });
+
+describe("GET :article_id comment_count", () => {
+  test("should return comment_count where comment(s) match article_id ", () => {
+    return request(app)
+      .get("/api/articles/2")
+      .expect(200)
+      .then(({ body }) => {
+        const { article } = body;
+        expect(article).toHaveProperty("comment_count");
+        expect(article.comment_count).toEqual("1");
+      });
+  });
+  test("should return total comment_count for article_id matching 1 ", () => {
+    return request(app)
+      .get("/api/articles/1")
+      .expect(200)
+      .then(({ body }) => {
+        const { article } = body;
+        expect(article).toHaveProperty("comment_count");
+        expect(article.comment_count).toEqual("11");
+      });
+  });
+});
