@@ -196,6 +196,7 @@ exports.pasteArticle = (article) => {
       ]
     )
     .then(({ rows }) => {
+      rows[0].comment_count = 0
       return rows[0];
     });
 };
