@@ -14,7 +14,10 @@ const {
   fetchUsers,
   removeComment,
   checkCommentExists,
+  pasteArticle,
 } = require("./models");
+
+// GET
 
 exports.getEndPoints = (_, res) => {
   res.status(200).send({ endpoints: endpointsJson });
@@ -61,53 +64,6 @@ exports.getAllComments = (req, res, next) => {
     });
 };
 
-exports.postComments = (req, res, next) => {
-  const { article_id } = req.params;
-  const { username, body } = req.body;
-
-  return checkUsers(username)
-    .then((usernamePass) => {
-      if (!usernamePass) {
-        return res.status(404).send({ msg: "Not Found" });
-      }
-
-      return pushComments(article_id, username, body).then((comment) => {
-        return res.status(201).send({ comment });
-      });
-    })
-    .catch((err) => {
-      next(err);
-    });
-};
-
-exports.patchArticleVotes = (req, res, next) => {
-  const { article_id } = req.params;
-  const { inc_votes } = req.body;
-
-  checkArticleExists(article_id)
-    .then(() => {
-      return updateArticleVotes(article_id, inc_votes).then(
-        (updatedArticle) => {
-          return res.status(201).send({ updatedArticle });
-        }
-      );
-    })
-    .catch((err) => {
-      next(err);
-    });
-};
-
-exports.deleteComment = (req, res, next) => {
-  const { comment_id } = req.params;
-  checkCommentExists(comment_id)
-    .then(() => {
-      return removeComment(comment_id).then((body) => {
-        return res.status(204).send({ body });
-      });
-    })
-    .catch(next);
-};
-
 exports.getUsers = (_, res, next) => {
   fetchUsers()
     .then((users) => {
@@ -130,6 +86,38 @@ exports.getUsername = (req, res, next) => {
     .catch(next);
 };
 
+// DELETE
+
+exports.deleteComment = (req, res, next) => {
+  const { comment_id } = req.params;
+  checkCommentExists(comment_id)
+    .then(() => {
+      return removeComment(comment_id).then((body) => {
+        return res.status(204).send({ body });
+      });
+    })
+    .catch(next);
+};
+
+// PATCH
+
+exports.patchArticleVotes = (req, res, next) => {
+  const { article_id } = req.params;
+  const { inc_votes } = req.body;
+
+  checkArticleExists(article_id)
+    .then(() => {
+      return updateArticleVotes(article_id, inc_votes).then(
+        (updatedArticle) => {
+          return res.status(201).send({ updatedArticle });
+        }
+      );
+    })
+    .catch((err) => {
+      next(err);
+    });
+};
+
 exports.patchCommentVotes = (req, res, next) => {
   const { comment_id } = req.params;
   const { inc_votes } = req.body;
@@ -141,6 +129,46 @@ exports.patchCommentVotes = (req, res, next) => {
           return res.status(201).send({ updatedComment });
         }
       );
+    })
+    .catch((err) => {
+      next(err);
+    });
+};
+
+// POST
+exports.postComments = (req, res, next) => {
+  const { article_id } = req.params;
+  const { username, body } = req.body;
+
+  return checkUsers(username)
+    .then((usernamePass) => {
+      if (!usernamePass) {
+        return res.status(404).send({ msg: "Not Found" });
+      }
+
+      return pushComments(article_id, username, body).then((comment) => {
+        return res.status(201).send({ comment });
+      });
+    })
+    .catch((err) => {
+      next(err);
+    });
+};
+
+exports.postArticle = (req, res, next) => {
+  const { author, title, body, topic, article_img_url } = req.body;
+
+  const article = {
+    author,
+    title,
+    body,
+    topic,
+    article_img_url,
+  };
+
+  pasteArticle(article)
+    .then((pastedArticle) => {
+      return res.status(201).send({ pastedArticle });
     })
     .catch((err) => {
       next(err);

@@ -7,6 +7,7 @@ const {
   getArticles,
   getAllComments,
   postComments,
+  postArticle,
   patchArticleVotes,
   patchCommentVotes,
   deleteComment,
@@ -32,6 +33,8 @@ apiRouter.get("/users/:username", getUsername);
 
 // POST routes
 apiRouter.post("/articles/:article_id/comments", postComments);
+
+apiRouter.post("/articles", postArticle);
 
 // DELETE routes
 apiRouter.delete("/comments/:comment_id", deleteComment);
