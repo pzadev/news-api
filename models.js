@@ -51,7 +51,7 @@ exports.fetchArticle = (article_id) => {
   const query = `
   SELECT articles.article_id, articles.topic, articles.author, articles.title, articles.body, 
   articles.created_at, articles.votes, articles.article_img_url,
-  COUNT(comments.comment_id) AS comment_count
+  CAST(COUNT(comments.comment_id) AS INTEGER) AS comment_count
   FROM articles
   JOIN comments ON articles.article_id = comments.article_id
   WHERE articles.article_id = $1
@@ -113,7 +113,7 @@ exports.checkUsers = (username) => {
 
 exports.updateVotes = (article_id, votes) => {
   if (!votes) return Promise.reject({ status: 400, msg: "Bad Request" });
-  
+
   let query = `UPDATE articles SET votes = votes + $1 WHERE article_id = $2 RETURNING *`;
   const values = [votes, article_id];
 
@@ -144,5 +144,14 @@ exports.removeComment = (comment_id) => {
 exports.fetchUsers = () => {
   return db.query(`SELECT * FROM users`).then(({ rows }) => {
     return rows;
+  });
+};
+
+exports.fetchUsername = (username) => {
+  const query = `SELECT * FROM users WHERE username = $1`;
+  const values = [username];
+
+  return db.query(query, values).then(({ rows }) => {
+    return rows[0];
   });
 };

@@ -9,7 +9,7 @@ const {
   pushComments,
   checkUsers,
   updateVotes,
-
+  fetchUsername,
   fetchUsers,
   removeComment,
   checkCommentExists,
@@ -64,7 +64,6 @@ exports.postComments = (req, res, next) => {
   const { article_id } = req.params;
   const { username, body } = req.body;
 
-
   return checkUsers(username)
     .then((usernamePass) => {
       if (!usernamePass) {
@@ -110,6 +109,20 @@ exports.getUsers = (_, res, next) => {
   fetchUsers()
     .then((users) => {
       return res.status(200).send({ users });
+    })
+    .catch(next);
+};
+
+exports.getUsername = (req, res, next) => {
+  const { username } = req.params;
+  return checkUsers(username)
+    .then((userExists) => {
+      if (!userExists){
+        return res.status(404).send({ msg: "Not Found" });
+      }
+      fetchUsername(username).then((userInfo) => {
+        return res.status(200).send({ userInfo });
+      });
     })
     .catch(next);
 };

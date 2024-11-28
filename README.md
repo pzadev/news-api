@@ -1,5 +1,8 @@
 # READ ME
 
+- **Link to hosted version: https://news-api-5gcc.onrender.com/api**
+
+- **Find a list of available endpoints above**
 
 ### Background and Requirements
 
@@ -8,11 +11,6 @@
 This project requires that you have downloaded and minimum version of
 - `Node.js V14`
 - `PostgreSQL V10`
-
-
-- **Link to hosted version: https://news-api-5gcc.onrender.com/**
-
-- **Find a list of endpoints to try in endpoints.json**
 
 
 ## Step One

@@ -434,7 +434,7 @@ describe("GET /api/articles (topic query)", () => {
   });
 });
 
-describe("GET :article_id comment_count", () => {
+describe("GET articles/:article_id - add comment_count", () => {
   test("should return comment_count where comment(s) match article_id ", () => {
     return request(app)
       .get("/api/articles/2")
@@ -442,7 +442,7 @@ describe("GET :article_id comment_count", () => {
       .then(({ body }) => {
         const { article } = body;
         expect(article).toHaveProperty("comment_count");
-        expect(article.comment_count).toEqual("1");
+        expect(article.comment_count).toBe(1);
       });
   });
   test("should return total comment_count for article_id matching 1 ", () => {
@@ -452,7 +452,31 @@ describe("GET :article_id comment_count", () => {
       .then(({ body }) => {
         const { article } = body;
         expect(article).toHaveProperty("comment_count");
-        expect(article.comment_count).toEqual("11");
+        expect(article.comment_count).toBe(11);
+      });
+  });
+});
+describe("GET/users/:username", () => {
+  test("should return user info from username input ", () => {
+    return request(app)
+      .get("/api/users/rogersop")
+      .expect(200)
+      .then(({ body }) => {
+        const { userInfo } = body;
+        expect(userInfo).toMatchObject({
+          username: expect.any(String),
+          name: expect.any(String),
+          avatar_url: expect.any(String),
+        });
+      });
+  });
+  test("should return error for non existing username ", () => {
+    return request(app)
+      .get("/api/users/peter")
+      .expect(404)
+      .then(({ body }) => {
+        const { msg } = body;
+        expect(msg).toBe("Not Found");
       });
   });
 });
