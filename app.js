@@ -1,5 +1,6 @@
 const express = require("express");
 const app = express();
+const apiRouter = require("./router/app.router");
 
 const {
   notFound,
@@ -7,42 +8,13 @@ const {
   serverError,
   wrongRoute,
 } = require("./error-handling");
-const {
-  getEndPoints,
-  getTopics,
-  getArticle,
-  getArticles,
-  getAllComments,
-  postComments,
-  patchVotes,
-  deleteComment,
-  getUsers,
-} = require("./controllers");
-
 
 app.use(express.json());
 
-app.get("/api", getEndPoints);
+// Router
+app.use("/api", apiRouter);
 
-app.get("/api/topics", getTopics);
-
-app.get("/api/articles", getArticles);
-
-app.get("/api/articles/:article_id", getArticle);
-
-app.get("/api/articles/:article_id/comments", getAllComments);
-
-app.get("/api/users", getUsers);
-
-app.post("/api/articles/:article_id/comments", postComments);
-
-app.delete("/api/comments/:comment_id", deleteComment);
-
-app.patch("/api/articles/:article_id", patchVotes);
-
-
-// Error Handling
-
+// Error Handlers
 app.use(notFound);
 app.use(customError);
 app.use(wrongRoute);
