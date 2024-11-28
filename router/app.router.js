@@ -1,5 +1,4 @@
 const apiRouter = require("express").Router();
-const express = require("express");
 
 const {
   getEndPoints,
@@ -11,6 +10,7 @@ const {
   patchVotes,
   deleteComment,
   getUsers,
+  getUsername
 } = require("../controllers");
 
 // GET Routes
@@ -26,6 +26,8 @@ apiRouter.get("/articles/:article_id", getArticle);
 apiRouter.get("/articles/:article_id/comments", getAllComments);
 
 apiRouter.get("/users", getUsers);
+
+apiRouter.get("/users/:username", getUsername);
 
 // POST routes
 apiRouter.post("/articles/:article_id/comments", postComments);
