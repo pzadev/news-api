@@ -1,6 +1,8 @@
 const db = require("./db/connection");
 const { sort } = require("./db/data/test-data/articles");
 
+// FETCH
+
 exports.fetchTopics = () => {
   const queryText = `SELECT * FROM topics`;
   return db.query(queryText).then(({ rows }) => rows);
@@ -79,6 +81,23 @@ exports.fetchComments = (article_id) => {
   });
 };
 
+exports.fetchUsers = () => {
+  return db.query(`SELECT * FROM users`).then(({ rows }) => {
+    return rows;
+  });
+};
+
+exports.fetchUsername = (username) => {
+  const query = `SELECT * FROM users WHERE username = $1`;
+  const values = [username];
+
+  return db.query(query, values).then(({ rows }) => {
+    return rows[0];
+  });
+};
+
+// CHECK
+
 exports.checkArticleExists = (article_id) => {
   const query = "SELECT * FROM articles WHERE article_id = $1";
   const values = [article_id];
@@ -91,18 +110,6 @@ exports.checkArticleExists = (article_id) => {
   });
 };
 
-exports.pushComments = (article_id, username, body) => {
-  return db
-    .query(
-      `INSERT INTO comments(article_id, author, body
-    ) VALUES ($1, $2, $3) RETURNING *`,
-      [article_id, username, body]
-    )
-    .then(({ rows }) => {
-      return rows[0];
-    });
-};
-
 exports.checkUsers = (username) => {
   return db
     .query(`SELECT * FROM users WHERE username = $1`, [username])
@@ -110,6 +117,20 @@ exports.checkUsers = (username) => {
       return rows.length > 0;
     });
 };
+
+exports.checkCommentExists = (comment_id) => {
+  const query = "SELECT * FROM comments WHERE comment_id = $1";
+  const values = [comment_id];
+
+  return db.query(query, values).then(({ rows }) => {
+    if (rows.length === 0) {
+      return Promise.reject({ status: 404, msg: "Id not found" });
+    }
+    return true;
+  });
+};
+
+// UPDATE
 
 exports.updateArticleVotes = (article_id, votes) => {
   if (!votes) return Promise.reject({ status: 400, msg: "Bad Request" });
@@ -133,17 +154,7 @@ exports.updateCommentVotes = (comment_id, votes) => {
   });
 };
 
-exports.checkCommentExists = (comment_id) => {
-  const query = "SELECT * FROM comments WHERE comment_id = $1";
-  const values = [comment_id];
-
-  return db.query(query, values).then(({ rows }) => {
-    if (rows.length === 0) {
-      return Promise.reject({ status: 404, msg: "Id not found" });
-    }
-    return true;
-  });
-};
+// REMOVE
 
 exports.removeComment = (comment_id) => {
   const query = "DELETE FROM comments WHERE comment_id = $1";
@@ -152,17 +163,40 @@ exports.removeComment = (comment_id) => {
   return db.query(query, values);
 };
 
-exports.fetchUsers = () => {
-  return db.query(`SELECT * FROM users`).then(({ rows }) => {
-    return rows;
-  });
+exports.pushComments = (article_id, username, body) => {
+  return db
+    .query(
+      `INSERT INTO comments(article_id, author, body
+      ) VALUES ($1, $2, $3) RETURNING *`,
+      [article_id, username, body]
+    )
+    .then(({ rows }) => {
+      return rows[0];
+    });
 };
 
-exports.fetchUsername = (username) => {
-  const query = `SELECT * FROM users WHERE username = $1`;
-  const values = [username];
+exports.pasteArticle = (article) => {
+  const { author, title, body, topic, article_img_url } = article;
 
-  return db.query(query, values).then(({ rows }) => {
-    return rows[0];
-  });
+  if (!author || !title || !body || !topic) {
+    return Promise.reject({ status: 400, msg: "Missing Input Key" });
+  }
+
+  return db
+    .query(
+      `INSERT INTO articles (title, topic, author, body, article_img_url) 
+    VALUES ($1, $2, $3, $4, $5) 
+    RETURNING *`,
+      [
+        title,
+        topic,
+        author,
+        body,
+        article_img_url || "default_img_url",
+      ]
+    )
+    .then(({ rows }) => {
+      rows[0].comment_count = 0
+      return rows[0];
+    });
 };

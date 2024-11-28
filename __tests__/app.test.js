@@ -40,7 +40,7 @@ describe("GET /api/topics", () => {
         });
       });
   });
-  test("should return 404 for an invalid url", () => {
+  test("should return 400 for an invalid url", () => {
     return request(app)
       .get("/api/notaroute")
       .expect(400)
@@ -226,7 +226,7 @@ describe("POST /api/articles/:article_id/comments", () => {
         });
       });
   });
-  test("return status 400 for non existing article_id", () => {
+  test("return status 404 for non existing article_id", () => {
     const comment = {
       body: "Run away, then when you've run far enough, run further",
       username: "butter_bridge",
@@ -548,6 +548,53 @@ describe("PATCH /api/comments/:comment_id", () => {
       .then(({ body }) => {
         const { msg } = body;
         expect(msg).toEqual("Bad Request");
+      });
+  });
+});
+
+describe("POST /api/articles/", () => {
+  test("should post an article", () => {
+    const articleToAdd = {
+      author: "rogersop",
+      title: "Am I a dog?",
+      body: "Wow really? I's actually a cat?",
+      topic: "cats",
+      article_img_url: null,
+    };
+    return request(app)
+      .post("/api/articles")
+      .send(articleToAdd)
+      .expect(201)
+      .then((response) => {
+        const { body } = response;
+        const { pastedArticle } = body;
+        expect(pastedArticle).toMatchObject({
+          article_id: expect.any(Number),
+          title: "Am I a dog?",
+          body: "Wow really? I's actually a cat?",
+          votes: expect.any(Number),
+          author: "rogersop",
+          created_at: expect.any(String),
+          article_img_url: expect.any(String),
+          comment_count: expect.any(Number)
+        });
+      });
+  });
+  test("should return error if input article.title is missing ", () => {
+    const articleToAdd = {
+      author: "rogersop",
+      body: "Wow really? I's actually a cat?",
+      topic: "cats",
+      article_img_url: null,
+    };
+    return request(app)
+      .post("/api/articles")
+      .send(articleToAdd)
+      .expect(400)
+      .then((response) => {
+        const { body } = response;
+        const { msg } = body;
+        expect(msg).toBe("Missing Input Key");
       });
   });
 });
