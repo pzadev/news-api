@@ -111,11 +111,22 @@ exports.checkUsers = (username) => {
     });
 };
 
-exports.updateVotes = (article_id, votes) => {
+exports.updateArticleVotes = (article_id, votes) => {
   if (!votes) return Promise.reject({ status: 400, msg: "Bad Request" });
 
   let query = `UPDATE articles SET votes = votes + $1 WHERE article_id = $2 RETURNING *`;
   const values = [votes, article_id];
+
+  return db.query(query, values).then(({ rows }) => {
+    return rows[0];
+  });
+};
+
+exports.updateCommentVotes = (comment_id, votes) => {
+  if (!votes) return Promise.reject({ status: 400, msg: "Bad Request" });
+
+  let query = `UPDATE comments SET votes = votes + $1 WHERE comment_id = $2 RETURNING *`;
+  const values = [votes, comment_id];
 
   return db.query(query, values).then(({ rows }) => {
     return rows[0];

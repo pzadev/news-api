@@ -7,10 +7,11 @@ const {
   getArticles,
   getAllComments,
   postComments,
-  patchVotes,
+  patchArticleVotes,
+  patchCommentVotes,
   deleteComment,
   getUsers,
-  getUsername
+  getUsername,
 } = require("../controllers");
 
 // GET Routes
@@ -36,6 +37,8 @@ apiRouter.post("/articles/:article_id/comments", postComments);
 apiRouter.delete("/comments/:comment_id", deleteComment);
 
 // PATCH routes
-apiRouter.patch("/articles/:article_id", patchVotes);
+apiRouter.patch("/articles/:article_id", patchArticleVotes);
+
+apiRouter.patch("/comments/:comment_id", patchCommentVotes);
 
 module.exports = apiRouter;
