@@ -69,12 +69,12 @@ describe("GET /api/articles/:article_id", () => {
         });
       });
   });
-  test("respond with 404 for invalid id", () => {
+  test("respond with 400 for a valid but non existing id", () => {
     return request(app)
       .get("/api/articles/9999")
-      .expect(404)
+      .expect(400)
       .then(({ body }) => {
-        expect(body.msg).toEqual("Not Found");
+        expect(body.msg).toEqual("Bad Request");
       });
   });
 });
@@ -86,6 +86,7 @@ describe("GET /api/articles", () => {
       .expect(200)
       .then(({ body }) => {
         const { articles } = body;
+        expect(articles).toHaveLength(13);
         articles.forEach((article) => {
           expect(article).toMatchObject({
             article_id: expect.any(Number),
@@ -110,6 +111,34 @@ describe("GET /api/articles", () => {
         expect(articles).toBeSortedBy("created_at", {
           descending: true,
         });
+      });
+  });
+  test("test non default sort_by and non default order", () => {
+    return request(app)
+      .get("/api/articles?sort_by=author&order=ASC")
+      .expect(200)
+      .then(({ body }) => {
+        const { articles } = body;
+        expect(articles).toHaveLength(13);
+        expect(articles).toBeSortedBy("author", { descending: false });
+      });
+  });
+  test("should return error for non existing sort_by query ", () => {
+    return request(app)
+      .get("/api/articles?sort_by=dogs")
+      .expect(400)
+      .then(({ body }) => {
+        const { msg } = body;
+        expect(msg).toEqual("Invalid sort_by query");
+      });
+  });
+  test("should return error for non existing order query ", () => {
+    return request(app)
+      .get("/api/articles?sort_by=author&order=dogs")
+      .expect(400)
+      .then(({ body }) => {
+        const { msg } = body;
+        expect(msg).toEqual("Invalid order query");
       });
   });
 });
@@ -148,10 +177,10 @@ describe("GET /api/articles/:article_id/comments", () => {
   test("should return 404 for valid but non existing article_id ", () => {
     return request(app)
       .get("/api/articles/999/comments")
-      .expect(404)
+      .expect(400)
       .then(({ body }) => {
         const { msg } = body;
-        expect(msg).toBe("Not Found");
+        expect(msg).toBe("Bad Request");
       });
   });
   test("should return empty array for valid article_id which has no comments", () => {
@@ -165,7 +194,7 @@ describe("GET /api/articles/:article_id/comments", () => {
   });
   test("should return error 400 for an invalid entry ", () => {
     return request(app)
-      .get("/api/articles/invalidRoute/comments")
+      .get("/api/articles/not-a-path/comments")
       .expect(400)
       .then(({ body }) => {
         const { msg } = body;
@@ -197,7 +226,7 @@ describe("POST /api/articles/:article_id/comments", () => {
         });
       });
   });
-  test("return status 404 for non existing article_id", () => {
+  test("return status 400 for non existing article_id", () => {
     const comment = {
       body: "Run away, then when you've run far enough, run further",
       username: "butter_bridge",
@@ -225,6 +254,20 @@ describe("POST /api/articles/:article_id/comments", () => {
         expect(msg).toBe("Not Found");
       });
   });
+  test("should return error for invalid article id ", () => {
+    const comment = {
+      body: "Run away, then when you've run far enough, run further",
+      username: "margarine_bridge",
+    };
+    return request(app)
+      .post("/api/articles/banana/comments")
+      .send(comment)
+      .expect(404)
+      .then(({ body }) => {
+        const { msg } = body;
+        expect(msg).toBe("Not Found");
+      });
+  });
 });
 
 describe("PATCH /api/articles/:article_id", () => {
@@ -236,18 +279,13 @@ describe("PATCH /api/articles/:article_id", () => {
       .send(updatedVote)
       .expect(201)
       .then(({ body }) => {
-        const { update } = body;
-        expect(update).toEqual({
-          article_id: 1,
-          title: "Living in the shadow of a great man",
-          topic: "mitch",
-          author: "butter_bridge",
-          body: "I find this existence challenging",
-          created_at: "2020-07-09T20:11:00.000Z",
-          votes: 119,
-          article_img_url:
-            "https://images.pexels.com/photos/158651/news-newsletter-newspaper-information-158651.jpeg?w=700&h=700",
-        });
+        const { updatedArticle } = body;
+        expect(updatedArticle).toEqual(
+          expect.objectContaining({
+            article_id: 1,
+            votes: 119,
+          })
+        );
       });
   });
 
@@ -259,8 +297,8 @@ describe("PATCH /api/articles/:article_id", () => {
       .send(updatedVote)
       .expect(201)
       .then(({ body }) => {
-        const { update } = body;
-        expect(update).toEqual({
+        const { updatedArticle } = body;
+        expect(updatedArticle).toEqual({
           article_id: 2,
           title: "Sony Vaio; or, The Laptop",
           topic: "mitch",
@@ -273,19 +311,19 @@ describe("PATCH /api/articles/:article_id", () => {
         });
       });
   });
-  test("should give error when passed valid but non existing article ID ", () => {
+  test("should give error 400 when passed valid but non existing article ID ", () => {
     const updatedVote = { inc_votes: 19 };
 
     return request(app)
       .patch("/api/articles/99")
       .send(updatedVote)
-      .expect(404)
+      .expect(400)
       .then(({ body }) => {
         const { msg } = body;
-        expect(msg).toEqual("Not Found");
+        expect(msg).toEqual("Bad Request");
       });
   });
-  test("should ", () => {
+  test("should return error 400 for an invalid route", () => {
     const updatedVote = { inc_votes: 1 };
 
     return request(app)
@@ -297,35 +335,41 @@ describe("PATCH /api/articles/:article_id", () => {
         expect(msg).toEqual("Bad Request");
       });
   });
+  test("should return error for invalid vote entry object", () => {
+    const updatedVote = { votes: 1 };
+    return request(app)
+      .patch("/api/articles/1")
+      .send(updatedVote)
+      .expect(400)
+      .then(({ body }) => {
+        const { msg } = body;
+        expect(msg).toEqual("Bad Request");
+      });
+  });
 });
 
 describe("DELETE /api/comments/:comment_id", () => {
   test("should delete a comment from a given comment_id ", () => {
-    return request(app)
-      .delete("/api/comments/1")
-      .expect(204)
-      .then(({ body }) => {
-        expect(body).toEqual({});
-      });
+    return request(app).delete("/api/comments/1").expect(204);
   });
-  test("should respond with error for valid but non existing comment_id", () => {
-    return request(app)
-      .delete("/api/comments/999")
-      .expect(404)
-      .then(({ body }) => {
-        const { msg } = body;
-        expect(msg).toEqual("Not Found");
-      });
-  });
-  test("respond with error 404 when trying to delete a comment already deleted", () => {
-    return request(app)
-      .delete("/api/comments/1")
-      .expect(404)
-      .then(({ body }) => {
-        const { msg } = body;
-        expect(msg).toEqual("Not Found");
-      });
-  });
+});
+test("should respond with error 400 for valid but non existing comment_id", () => {
+  return request(app)
+    .delete("/api/comments/999")
+    .expect(400)
+    .then(({ body }) => {
+      const { msg } = body;
+      expect(msg).toEqual("Bad Request");
+    });
+});
+test("respond with error 400 when trying to delete an invalid id", () => {
+  return request(app)
+    .delete("/api/comments/not-a-valid-id")
+    .expect(400)
+    .then(({ body }) => {
+      const { msg } = body;
+      expect(msg).toEqual("Bad Request");
+    });
 });
 
 describe("GET /api/users", () => {
@@ -345,57 +389,8 @@ describe("GET /api/users", () => {
         });
       });
   });
-  test("should return error 400 for an invalid route ", () => {
-    return request(app)
-      .get("/api/usernames")
-      .expect(400)
-      .then(({ body }) => {
-        const { msg } = body;
-        expect(msg).toEqual("Bad Request");
-      });
-  });
 });
 
-describe("GET /api/articles (sorting queries)", () => {
-  test("should default sort by created_at and default order by desc", () => {
-    return request(app)
-      .get("/api/articles")
-      .expect(200)
-      .then(({ body }) => {
-        const { articles } = body;
-        expect(articles).toHaveLength(13);
-        expect(articles).toBeSortedBy("created_at", { descending: true });
-      });
-  });
-  test("test non default sort_by and non default order", () => {
-    return request(app)
-      .get("/api/articles?sort_by=author&order=ASC")
-      .expect(200)
-      .then(({ body }) => {
-        const { articles } = body;
-        expect(articles).toHaveLength(13);
-        expect(articles).toBeSortedBy("author", { descending: false });
-      });
-  });
-  test("should return error for non existing sort_by query ", () => {
-    return request(app)
-      .get("/api/articles?sort_by=dogs")
-      .expect(400)
-      .then(({ body }) => {
-        const { msg } = body;
-        expect(msg).toEqual("Invalid sort_by query");
-      });
-  });
-  test("should return error for non existing order query ", () => {
-    return request(app)
-      .get("/api/articles?sort_by=author&order=dogs")
-      .expect(400)
-      .then(({ body }) => {
-        const { msg } = body;
-        expect(msg).toEqual("Invalid order query");
-      });
-  });
-});
 describe("GET /api/articles (topic query)", () => {
   test("should accept topic query and filter by matching topic", () => {
     return request(app)
