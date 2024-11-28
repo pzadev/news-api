@@ -480,3 +480,74 @@ describe("GET/users/:username", () => {
       });
   });
 });
+
+describe("PATCH /api/comments/:comment_id", () => {
+  test("responds with updated comment", () => {
+    const updatedVote = { inc_votes: 10 };
+
+    return request(app)
+      .patch("/api/comments/2")
+      .send(updatedVote)
+      .expect(201)
+      .then(({ body }) => {
+        const { updatedComment } = body;
+        expect(updatedComment).toEqual(
+          expect.objectContaining({
+            comment_id: 2,
+            votes: 24,
+          })
+        );
+      });
+  });
+
+  test("should decrease vote count correctly if given negative int", () => {
+    const updatedVote = { inc_votes: -100 };
+    return request(app)
+      .patch("/api/comments/2")
+      .send(updatedVote)
+      .expect(201)
+      .then(({ body }) => {
+        const { updatedComment } = body;
+        expect(updatedComment).toMatchObject({
+          votes: -76,
+          comment_id: 2,
+        });
+      });
+  });
+
+  test("should give error 400 when passed valid but non existing comment ID ", () => {
+    const updatedVote = { inc_votes: 19 };
+
+    return request(app)
+      .patch("/api/comments/222")
+      .send(updatedVote)
+      .expect(400)
+      .then(({ body }) => {
+        const { msg } = body;
+        expect(msg).toEqual("Bad Request");
+      });
+  });
+  test("should return error 400 for an invalid route", () => {
+    const updatedVote = { inc_votes: 1 };
+
+    return request(app)
+      .patch("/api/not-a-url/1")
+      .send(updatedVote)
+      .expect(400)
+      .then(({ body }) => {
+        const { msg } = body;
+        expect(msg).toEqual("Bad Request");
+      });
+  });
+  test("should return error for invalid vote entry object", () => {
+    const updatedVote = { votes: 1 };
+    return request(app)
+      .patch("/api/articles/1")
+      .send(updatedVote)
+      .expect(400)
+      .then(({ body }) => {
+        const { msg } = body;
+        expect(msg).toEqual("Bad Request");
+      });
+  });
+});

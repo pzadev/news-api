@@ -8,7 +8,8 @@ const {
   checkArticleExists,
   pushComments,
   checkUsers,
-  updateVotes,
+  updateArticleVotes,
+  updateCommentVotes,
   fetchUsername,
   fetchUsers,
   removeComment,
@@ -79,15 +80,17 @@ exports.postComments = (req, res, next) => {
     });
 };
 
-exports.patchVotes = (req, res, next) => {
+exports.patchArticleVotes = (req, res, next) => {
   const { article_id } = req.params;
   const { inc_votes } = req.body;
 
   checkArticleExists(article_id)
     .then(() => {
-      return updateVotes(article_id, inc_votes).then((updatedArticle) => {
-        return res.status(201).send({ updatedArticle });
-      });
+      return updateArticleVotes(article_id, inc_votes).then(
+        (updatedArticle) => {
+          return res.status(201).send({ updatedArticle });
+        }
+      );
     })
     .catch((err) => {
       next(err);
@@ -117,7 +120,7 @@ exports.getUsername = (req, res, next) => {
   const { username } = req.params;
   return checkUsers(username)
     .then((userExists) => {
-      if (!userExists){
+      if (!userExists) {
         return res.status(404).send({ msg: "Not Found" });
       }
       fetchUsername(username).then((userInfo) => {
@@ -125,4 +128,21 @@ exports.getUsername = (req, res, next) => {
       });
     })
     .catch(next);
+};
+
+exports.patchCommentVotes = (req, res, next) => {
+  const { comment_id } = req.params;
+  const { inc_votes } = req.body;
+
+  checkCommentExists(comment_id)
+    .then(() => {
+      return updateCommentVotes(comment_id, inc_votes).then(
+        (updatedComment) => {
+          return res.status(201).send({ updatedComment });
+        }
+      );
+    })
+    .catch((err) => {
+      next(err);
+    });
 };
