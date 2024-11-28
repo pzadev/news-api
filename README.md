@@ -28,7 +28,6 @@ This project requires that you have downloaded and minimum version of
 - Seed the project by running `npm run setup-dbs` and proceed to start the project by using `npm run seed`.
 
 
-
 --- 
 
 This portfolio project was created as part of a Digital Skills Bootcamp in Software Engineering provided by [Northcoders](https://northcoders.com/)

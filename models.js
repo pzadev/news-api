@@ -27,7 +27,7 @@ exports.fetchArticles = (sort_by = "created_at", order = "DESC", topic) => {
   }
 
   let queryText = `
-    SELECT articles.article_id, articles.author, articles.topic, articles.title, articles.created_at, articles.votes, articles.article_img_url, COUNT(comments.comment_id) AS comment_count
+    SELECT articles.article_id, articles.author, articles.topic, articles.title, articles.created_at, articles.votes, articles.article_img_url, CAST(COUNT(comments.comment_id) AS INTEGER) AS comment_count
     FROM articles
     LEFT JOIN comments ON articles.article_id = comments.article_id
   `;
@@ -43,17 +43,12 @@ exports.fetchArticles = (sort_by = "created_at", order = "DESC", topic) => {
   }
 
   return db.query(queryText, topic ? [topic] : []).then(({ rows }) => {
-    rows.map((article) => {
-      article.comment_count = Number(article.comment_count);
-      return article;
-    });
     return rows;
   });
 };
 
 exports.fetchArticle = (article_id) => {
-
-  const text = `
+  const query = `
   SELECT articles.article_id, articles.topic, articles.author, articles.title, articles.body, 
   articles.created_at, articles.votes, articles.article_img_url,
   COUNT(comments.comment_id) AS comment_count
@@ -64,7 +59,7 @@ exports.fetchArticle = (article_id) => {
 `;
 
   const values = [article_id];
-  return db.query(text, values).then(({ rows }) => {
+  return db.query(query, values).then(({ rows }) => {
     if (rows.length === 0) {
       return Promise.reject({ status: 404, msg: "Id not found" });
     }
@@ -73,10 +68,10 @@ exports.fetchArticle = (article_id) => {
 };
 
 exports.fetchComments = (article_id) => {
-  const text =
+  const query =
     "SELECT * FROM comments WHERE article_id = $1 ORDER BY created_at DESC";
   const values = [article_id];
-  return db.query(text, values).then(({ rows }) => {
+  return db.query(query, values).then(({ rows }) => {
     if (rows.length === 0) {
       return [];
     }
@@ -85,10 +80,10 @@ exports.fetchComments = (article_id) => {
 };
 
 exports.checkArticleExists = (article_id) => {
-  const text = "SELECT * FROM articles WHERE article_id = $1";
+  const query = "SELECT * FROM articles WHERE article_id = $1";
   const values = [article_id];
 
-  return db.query(text, values).then(({ rows }) => {
+  return db.query(query, values).then(({ rows }) => {
     if (rows.length === 0) {
       return Promise.reject({ status: 404, msg: "Id not found" });
     }
@@ -117,19 +112,21 @@ exports.checkUsers = (username) => {
 };
 
 exports.updateVotes = (article_id, votes) => {
-  let text = `UPDATE articles SET votes = votes + $1 WHERE article_id = $2 RETURNING *`;
+  if (!votes) return Promise.reject({ status: 400, msg: "Bad Request" });
+  
+  let query = `UPDATE articles SET votes = votes + $1 WHERE article_id = $2 RETURNING *`;
   const values = [votes, article_id];
 
-  return db.query(text, values).then(({ rows }) => {
+  return db.query(query, values).then(({ rows }) => {
     return rows[0];
   });
 };
 
 exports.checkCommentExists = (comment_id) => {
-  const text = "SELECT * FROM comments WHERE comment_id = $1";
+  const query = "SELECT * FROM comments WHERE comment_id = $1";
   const values = [comment_id];
 
-  return db.query(text, values).then(({ rows }) => {
+  return db.query(query, values).then(({ rows }) => {
     if (rows.length === 0) {
       return Promise.reject({ status: 404, msg: "Id not found" });
     }
@@ -138,10 +135,10 @@ exports.checkCommentExists = (comment_id) => {
 };
 
 exports.removeComment = (comment_id) => {
-  const text = "DELETE FROM comments WHERE comment_id = $1";
+  const query = "DELETE FROM comments WHERE comment_id = $1";
   const values = [comment_id];
 
-  return db.query(text, values);
+  return db.query(query, values);
 };
 
 exports.fetchUsers = () => {
