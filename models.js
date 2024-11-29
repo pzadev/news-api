@@ -8,7 +8,13 @@ exports.fetchTopics = () => {
   return db.query(queryText).then(({ rows }) => rows);
 };
 
-exports.fetchArticles = (sort_by = "created_at", order = "DESC", topic) => {
+exports.fetchArticles = (
+  sort_by = "created_at",
+  order = "DESC",
+  topic,
+  limit = 10,
+  p = 1
+) => {
   const validQueries = [
     "created_at",
     "title",
@@ -20,33 +26,56 @@ exports.fetchArticles = (sort_by = "created_at", order = "DESC", topic) => {
   ];
   const validOrders = ["ASC", "DESC", "asc", "desc"];
 
-  if (!validQueries.includes(sort_by)) {
-    return Promise.reject({ status: 400, msg: "Invalid sort_by query" });
-  }
+  const offset = (p - 1) * limit;
 
-  if (!validOrders.includes(order)) {
-    return Promise.reject({ status: 400, msg: "Invalid order query" });
+  if (
+    !validQueries.includes(sort_by) ||
+    !validOrders.includes(order) ||
+    limit < 1 ||
+    p < 1 ||
+    isNaN(p) ||
+    isNaN(limit)
+  ) {
+    return Promise.reject({ status: 400, msg: "Bad Request" });
   }
 
   let queryText = `
-    SELECT articles.article_id, articles.author, articles.topic, articles.title, articles.created_at, articles.votes, articles.article_img_url, CAST(COUNT(comments.comment_id) AS INTEGER) AS comment_count
+    SELECT articles.article_id, articles.author, articles.topic, articles.title, articles.created_at, articles.votes, articles.article_img_url, 
+           CAST(COUNT(comments.comment_id) AS INTEGER) AS comment_count
     FROM articles
     LEFT JOIN comments ON articles.article_id = comments.article_id
   `;
 
+  const queryParams = [];
+
   if (topic) {
     queryText += ` WHERE articles.topic = $1 `;
+    queryParams.push(topic);
   }
 
   queryText += `GROUP BY articles.article_id`;
 
-  if (validQueries.includes(sort_by) && validOrders.includes(order)) {
-    queryText += ` ORDER BY ${sort_by} ${order}`;
-  }
+  queryText += ` ORDER BY ${sort_by} ${order}`;
 
-  return db.query(queryText, topic ? [topic] : []).then(({ rows }) => {
-    return rows;
-  });
+  queryText += ` LIMIT $${queryParams.length + 1} OFFSET $${
+    queryParams.length + 2
+  }`;
+  queryParams.push(limit, offset);
+
+  const countQuery = `
+    SELECT COUNT(*) 
+    FROM articles
+    ${topic ? "WHERE articles.topic = $1" : ""}
+  `;
+
+  return db
+    .query(countQuery, topic ? [topic] : [])
+    .then(({ rows: countRows }) => {
+      const totalCount = parseInt(countRows[0].count, 10);
+      return db.query(queryText, queryParams).then(({ rows }) => {
+        return { articles: rows, total_count: totalCount };
+      });
+    });
 };
 
 exports.fetchArticle = (article_id) => {
@@ -187,16 +216,10 @@ exports.pasteArticle = (article) => {
       `INSERT INTO articles (title, topic, author, body, article_img_url) 
     VALUES ($1, $2, $3, $4, $5) 
     RETURNING *`,
-      [
-        title,
-        topic,
-        author,
-        body,
-        article_img_url || "default_img_url",
-      ]
+      [title, topic, author, body, article_img_url || "default_img_url"]
     )
     .then(({ rows }) => {
-      rows[0].comment_count = 0
+      rows[0].comment_count = 0;
       return rows[0];
     });
 };

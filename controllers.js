@@ -32,13 +32,18 @@ exports.getTopics = (_, res, next) => {
 };
 
 exports.getArticles = (req, res, next) => {
-  const { sort_by, order, topic } = req.query;
-  fetchArticles(sort_by, order, topic)
-    .then((articles) => {
-      res.status(200).send({ articles });
+  const { sort_by, order, topic, limit = 10, p = 1 } = req.query;
+  const parsedLimit = parseInt(limit);
+  const parsedPage = parseInt(p);
+
+  fetchArticles(sort_by, order, topic, parsedLimit, parsedPage)
+    .then(({ articles, total_count }) => {
+      res.status(200).send({ articles, total_count });
     })
-    .catch(next);
+    .catch(next); 
 };
+
+
 
 exports.getArticle = (req, res, next) => {
   const { article_id } = req.params;

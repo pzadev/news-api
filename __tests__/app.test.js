@@ -86,7 +86,8 @@ describe("GET /api/articles", () => {
       .expect(200)
       .then(({ body }) => {
         const { articles } = body;
-        expect(articles).toHaveLength(13);
+        const {total_count} = body
+        expect(total_count).toBe(13);
         articles.forEach((article) => {
           expect(article).toMatchObject({
             article_id: expect.any(Number),
@@ -107,7 +108,8 @@ describe("GET /api/articles", () => {
       .expect(200)
       .then(({ body }) => {
         const { articles } = body;
-        expect(articles).toHaveLength(13);
+        const {total_count} = body
+        expect(total_count).toBe(13);
         expect(articles).toBeSortedBy("created_at", {
           descending: true,
         });
@@ -119,7 +121,8 @@ describe("GET /api/articles", () => {
       .expect(200)
       .then(({ body }) => {
         const { articles } = body;
-        expect(articles).toHaveLength(13);
+        const {total_count} = body
+        expect(total_count).toBe(13);
         expect(articles).toBeSortedBy("author", { descending: false });
       });
   });
@@ -129,7 +132,7 @@ describe("GET /api/articles", () => {
       .expect(400)
       .then(({ body }) => {
         const { msg } = body;
-        expect(msg).toEqual("Invalid sort_by query");
+        expect(msg).toEqual("Bad Request");
       });
   });
   test("should return error for non existing order query ", () => {
@@ -138,7 +141,25 @@ describe("GET /api/articles", () => {
       .expect(400)
       .then(({ body }) => {
         const { msg } = body;
-        expect(msg).toEqual("Invalid order query");
+        expect(msg).toEqual("Bad Request");
+      });
+  });
+  test("should return query limit of 10 results (default)", () => {
+    return request(app)
+      .get("/api/articles?limit=5")
+      .expect(200)
+      .then(({ body }) => {
+        const { articles } = body;
+        expect(articles).toHaveLength(5);
+      });
+  });
+  test("should default limit to 10 results when no limit value is provided", () => {
+    return request(app)
+      .get("/api/articles")
+      .expect(200)
+      .then(({ body }) => {
+        const { articles } = body;
+        expect(articles).toHaveLength(10);
       });
   });
 });
@@ -408,7 +429,8 @@ describe("GET /api/articles (topic query)", () => {
       .expect(200)
       .then(({ body }) => {
         const { articles } = body;
-        expect(articles).toHaveLength(13);
+        const {total_count} = body
+        expect(total_count).toBe(13);
         expect(articles).toBeSortedBy("created_at", { descending: true });
       });
   });
@@ -568,7 +590,6 @@ describe("POST /api/articles/", () => {
       .then((response) => {
         const { body } = response;
         const { pastedArticle } = body;
-        console.log(pastedArticle)
         expect(pastedArticle).toMatchObject({
           article_id: expect.any(Number),
           title: "Am I a dog?",
@@ -577,7 +598,7 @@ describe("POST /api/articles/", () => {
           author: "rogersop",
           created_at: expect.any(String),
           article_img_url: expect.any(String),
-          comment_count: expect.any(Number)
+          comment_count: expect.any(Number),
         });
       });
   });
