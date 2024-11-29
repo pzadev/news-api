@@ -23,8 +23,17 @@ This project requires that you have downloaded and minimum version of
 
 ## Step Three 
 
-- Seed the project by running `npm run setup-dbs` and proceed to start the project by using `npm run seed`.
+- Seed the project by running `npm run setup-dbs` and proceed to start the project by using `npm run seed`. 
 
+- To verify that everything is up and running use `npm run test` and check that all tests are passing. 
+
+## Step Four
+
+- I would recommend downloading Insomnia (https://insomnia.rest/download) to make various GET, POST, and PATCH requests to the API.
+
+- Run the listen.js file to make sure the API is listening correctly
+
+- Test it, add to it and enjoy!
 
 --- 
 
