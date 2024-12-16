@@ -568,7 +568,6 @@ describe("POST /api/articles/", () => {
       .then((response) => {
         const { body } = response;
         const { pastedArticle } = body;
-        console.log(pastedArticle)
         expect(pastedArticle).toMatchObject({
           article_id: expect.any(Number),
           title: "Am I a dog?",
