@@ -52,12 +52,12 @@ exports.fetchArticles = (sort_by = "created_at", order = "DESC", topic) => {
 exports.fetchArticle = (article_id) => {
   const query = `
   SELECT articles.article_id, articles.topic, articles.author, articles.title, articles.body, 
-  articles.created_at, articles.votes, articles.article_img_url,
-  CAST(COUNT(comments.comment_id) AS INTEGER) AS comment_count
-  FROM articles
-  JOIN comments ON articles.article_id = comments.article_id
-  WHERE articles.article_id = $1
-  GROUP BY articles.article_id
+articles.created_at, articles.votes, articles.article_img_url,
+CAST(COUNT(comments.comment_id) AS INTEGER) AS comment_count
+FROM articles
+LEFT JOIN comments ON articles.article_id = comments.article_id
+WHERE articles.article_id = $1
+GROUP BY articles.article_id;
 `;
 
   const values = [article_id];
@@ -187,16 +187,10 @@ exports.pasteArticle = (article) => {
       `INSERT INTO articles (title, topic, author, body, article_img_url) 
     VALUES ($1, $2, $3, $4, $5) 
     RETURNING *`,
-      [
-        title,
-        topic,
-        author,
-        body,
-        article_img_url || "default_img_url",
-      ]
+      [title, topic, author, body, article_img_url || "default_img_url"]
     )
     .then(({ rows }) => {
-      rows[0].comment_count = 0
+      rows[0].comment_count = 0;
       return rows[0];
     });
 };
