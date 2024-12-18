@@ -17,6 +17,7 @@ exports.fetchArticles = (sort_by = "created_at", order = "DESC", topic) => {
     "author_id",
     "topic",
     "article_id",
+    "comment_count",
   ];
   const validOrders = ["ASC", "DESC", "asc", "desc"];
 
